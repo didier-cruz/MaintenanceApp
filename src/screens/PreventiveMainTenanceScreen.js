@@ -56,8 +56,8 @@ export default ({ navigation }) => {
   const ListHeaderComponent = () => {
     return (
       <>
-        <Title>Mantenimiento Correctivo</Title>
-        <Indication>Realice las correcciones necesarias</Indication>
+        <Title>Mantenimiento Preventivo</Title>
+        <Indication>Realice los mantenimientos programados</Indication>
         <ButtonGroupType
           buttons={EquipmentTypeArray}
           updateIndex={updateIndex}

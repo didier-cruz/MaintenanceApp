@@ -81,11 +81,9 @@ export default function MainNavigator() {
 
 const styles = StyleSheet.create({
   headerStyle: {
-    height: HeaderHeight,
     backgroundColor: Colors.complementary,
   },
   scannerHeaderStyle: {
-    height: HeaderHeight,
     backgroundColor: Colors.complementary,
     opacity: 0.7,
   },
