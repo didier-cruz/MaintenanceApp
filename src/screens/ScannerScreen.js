@@ -1,11 +1,14 @@
+import { SafeAreaView } from "react-native-safe-area-context";
+import { STACK_SCREEN_EDGES } from "../constants/SafeArea";
 import React from "react";
-import { SafeAreaView, View, Text, StyleSheet } from "react-native";
+
+import { View, Text, StyleSheet } from "react-native";
 import Dimensions from "../constants/Dimensions";
 import Colors from "../constants/Colors";
 
 export default () => {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={STACK_SCREEN_EDGES} style={styles.container}>
       <View>
         <Text>Pantalla Escaner</Text>
       </View>

@@ -1,7 +1,8 @@
-import React, { memo, useState } from "react";
+import React, { memo } from "react";
 import { StyleSheet } from "react-native";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import { useDispatch, useSelector } from "react-redux";
 import BottomTabs from "./BottomTabs";
 import Dimensions from "../constants/Dimensions";
 import Colors from "../constants/Colors";
@@ -9,86 +10,70 @@ import { ExitButton } from "../components/Buttons";
 //screens
 import ScannerScreen from "../screens/ScannerScreen";
 //redux
-import { useSelector, useDispatch } from "react-redux";
-import { toggleAccess } from "../store/actions/access";
-//constants
+import { toggleOverlay } from "../store/actions/overlay";
 //constants
 import { ScreensEnum } from "../constants/enum/ScreensEnum";
-import { toggleOverlay } from "../store/actions/overlay";
+
 const Stack = createStackNavigator();
+const BottomTabsMemo = memo(BottomTabs);
 const HeaderHeight = Dimensions.height * 0.1;
 const HeaderTitleHeight = HeaderHeight / 3.5;
 
-export default function MainNavigator() {
-  /**
-   * Memoizo este componente para
-   * evitar que sea renderizado innecesariamente
-   */
-  const BottomTabsMemo = memo(BottomTabs);
+const { Home, Scanner } = ScreensEnum.MainNavigator;
+const { Maintenances, Dashboards } = ScreensEnum.BottomTabs;
 
-  const { Home, Scanner } = ScreensEnum.MainNavigator;
-  const { Maintenances, Dashboards } = ScreensEnum.BottomTabs;
+/**
+ * Gets the header title from the focused BottomTabs route name.
+ * @param {object} route - Route object
+ * @returns {string|undefined} The title
+ */
+function getHeaderTitle(route) {
+  const routeName = getFocusedRouteNameFromRoute(route);
 
-  /**
-   * Esta función obtiene el título en función de los nombres de
-   * ruta de las BottomTabs cx
-   * @param {route} route - Objeto de rutas
-   * @returns Te devuelve el título
-   */
-  function getHeaderTitle(route) {
-    const routeName = getFocusedRouteNameFromRoute(route);
-
-    switch (routeName) {
-      case Maintenances:
-        return "Lafarge Holcim";
-      case Dashboards:
-        return "Lafarge Holcim";
-    }
+  switch (routeName) {
+    case Maintenances:
+    case Dashboards:
+    default:
+      return "Lafarge Holcim";
   }
+}
 
+/** Exit button, only visible while the user is inside a plantel. */
+function HeaderExitButton() {
   const dispatch = useDispatch();
-  const manageAccess = useSelector((state) => state.access);
-  const manageOverlay = useSelector((state) => state.overlay);
+  const access = useSelector((state) => state.access);
+  if (access) {
+    return null;
+  }
+  return <ExitButton text="Salida" onPress={() => dispatch(toggleOverlay())} />;
+}
 
-  const ManageOverlayHandler = () => {
-    console.log(`El Overlay desde MainNav es: ${manageOverlay}`);
-    dispatch(toggleOverlay(manageOverlay));
-    return console.log("Puro Redux");
-  };
+const renderHeaderRight = () => <HeaderExitButton />;
 
-  const getHeaderRightComponent = () => {
-    console.log(manageAccess);
-    if (!manageAccess)
-      return <ExitButton text="Salida" onPress={ManageOverlayHandler} />;
-    return <></>;
-  };
-
+export default function MainNavigator() {
   return (
-    <Stack.Navigator
-      initialRouteName={Home}
-      style={{ backgroundColor: Colors.complementary }}
-    >
+    <Stack.Navigator initialRouteName={Home}>
       <Stack.Screen
         name={Home}
         component={BottomTabsMemo}
         options={({ route }) => ({
-          title: "Lafarge Holcim", //Fix
+          title: "Lafarge Holcim",
           headerTitle: getHeaderTitle(route),
           headerTintColor: Colors.dominant,
           headerStyle: styles.headerStyle,
           headerTitleStyle: styles.headerTitleStyle,
-          headerRight: () => getHeaderRightComponent(),
+          headerRight: renderHeaderRight,
         })}
       />
       <Stack.Screen
         name={Scanner}
         component={ScannerScreen}
-        options={({ route }) => ({
+        options={{
           title: "",
           headerShown: true,
-          headerStyle: { ...styles.headerStyle, opacity: 0.7 },
+          headerStyle: styles.scannerHeaderStyle,
           headerTintColor: Colors.dominant,
-        })}
+        }}
       />
     </Stack.Navigator>
   );
@@ -98,6 +83,11 @@ const styles = StyleSheet.create({
   headerStyle: {
     height: HeaderHeight,
     backgroundColor: Colors.complementary,
+  },
+  scannerHeaderStyle: {
+    height: HeaderHeight,
+    backgroundColor: Colors.complementary,
+    opacity: 0.7,
   },
   headerTitleStyle: {
     fontSize: HeaderTitleHeight,

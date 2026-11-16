@@ -1,45 +1,24 @@
-import React, { memo } from "react";
+import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { createStore, combineReducers } from "redux";
 import { Provider } from "react-redux";
-// Before rendering any navigation stack
-import { enableScreens } from "react-native-screens";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
-//navigation
 import MainNavigator from "./navigation/MainNavigator";
-import accessReducer from "./store/reducers/access";
-import overlayReducer from "./store/reducers/overlay";
-
-/**
- * memoizing navigator to avoid unnecesary re-renders
- */
-const MainNavigatorMemo = memo(MainNavigator);
-
-/**
- * We can have multiple reducers,
- * because of that you have to make a rootReducer
- * to pass it to the createStore method
- */
-const rootReducer = combineReducers({
-  access: accessReducer,
-  overlay: overlayReducer,
-});
-
-/**
- * Creating the store that will hold
- * the states we want
- */
-const store = createStore(rootReducer);
-
-//This is to fix any performance trouble with screens
-enableScreens();
+import store from "./store";
 
 export default function App() {
   return (
-    <Provider store={store}>
-      <NavigationContainer>
-        <MainNavigatorMemo />
-      </NavigationContainer>
-    </Provider>
+    <GestureHandlerRootView style={styles.root}>
+      <SafeAreaProvider>
+        <Provider store={store}>
+          <NavigationContainer>
+            <MainNavigator />
+          </NavigationContainer>
+        </Provider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
+
+const styles = { root: { flex: 1 } };

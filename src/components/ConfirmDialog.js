@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
-import { Overlay, CheckBox, Button } from "react-native-elements";
+import { View, StyleSheet, Text, Modal, Pressable } from "react-native";
 //components
 import { Title } from "./Title";
 import { Clock } from "./Clock";
@@ -26,53 +25,58 @@ export const ConfirmDialog = ({
   };
 
   const dispatch = useDispatch();
-  const manageAccess = useSelector((state) => state.access);
-  let manageOverlay = useSelector((state) => state.overlay);
-  manageOverlay =
-    typeof manageOverlay === "object" ? manageOverlay.visible : manageOverlay;
+  const manageOverlay = useSelector((state) => state.overlay);
   const ManageAccessHandler = () => {
-    console.log(`Leo Redux acceso: ${manageAccess}`);
-    console.log(`Leo Redux overlay: ${manageOverlay}`);
-    dispatch(toggleAccess(manageAccess));
-    if (!isArriving) dispatch(toggleOverlay(manageOverlay));
+    dispatch(toggleAccess());
+    if (!isArriving) dispatch(toggleOverlay());
   };
 
   const toogleOuterOverlay = () => {
-    dispatch(toggleOverlay(manageOverlay));
+    dispatch(toggleOverlay());
   };
 
+  const close = isArriving ? toggleInnerOverlay : toogleOuterOverlay;
+
   return (
-    <Overlay
-      isVisible={isArriving ? visible : manageOverlay}
-      onBackdropPress={isArriving ? toggleInnerOverlay : toogleOuterOverlay}
-      overlayStyle={styles.overlay}
+    <Modal
+      visible={isArriving ? visible : manageOverlay}
+      transparent
+      animationType="fade"
+      onRequestClose={close}
+      statusBarTranslucent
     >
-      <>
-        <CancelButton
-          onPress={isArriving ? toggleInnerOverlay : toogleOuterOverlay}
-        />
-        <View style={styles.container}>
-          <Title size={30}>{titleText}</Title>
-          <CheckBox
-            center
-            title={checkText}
-            checked={check}
-            onPress={toggleCheckBox}
-            style={styles.check}
-          />
-          <Clock />
-          <View>
-            <Text style={styles.notifyAdminText}>
-              Se notificará a los administradores
-            </Text>
+      <Pressable style={styles.backdrop} onPress={close}>
+        {/* Inner Pressable swallows taps so only the backdrop closes the dialog */}
+        <Pressable style={styles.overlay}>
+          <CancelButton onPress={close} />
+          <View style={styles.container}>
+            <Title size={30}>{titleText}</Title>
+            <Pressable
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: check }}
+              accessibilityLabel={checkText}
+              onPress={toggleCheckBox}
+              style={styles.check}
+            >
+              <View style={[styles.checkBox, check && styles.checkBoxChecked]}>
+                {check ? <Text style={styles.checkMark}>✓</Text> : null}
+              </View>
+              <Text style={styles.checkText}>{checkText}</Text>
+            </Pressable>
+            <Clock />
+            <View>
+              <Text style={styles.notifyAdminText}>
+                Se notificará a los administradores
+              </Text>
+            </View>
+            <ConfirmButton
+              buttonText={buttonText}
+              onPress={ManageAccessHandler}
+            />
           </View>
-          <ConfirmButton
-            buttonText={buttonText}
-            onPress={ManageAccessHandler}
-          />
-        </View>
-      </>
-    </Overlay>
+        </Pressable>
+      </Pressable>
+    </Modal>
   );
 };
 
@@ -83,11 +87,42 @@ const styles = StyleSheet.create({
     justifyContent: "space-evenly",
     alignItems: "center",
   },
+  backdrop: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.7)",
+  },
   overlay: {
     backgroundColor: Colors.dominant,
+    borderRadius: 5,
+    padding: 10,
+    elevation: 5,
   },
   check: {
-    backgroundColor: "transparent",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  checkBox: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: Colors.complementary,
+    borderRadius: 4,
+    marginRight: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkBoxChecked: {
+    backgroundColor: Colors.complementary,
+  },
+  checkMark: {
+    color: Colors.accent,
+    fontWeight: "bold",
+  },
+  checkText: {
+    fontSize: 16,
+    fontWeight: "bold",
   },
   notifyAdminText: {
     fontSize: 18,

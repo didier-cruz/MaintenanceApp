@@ -1,5 +1,8 @@
+import { SafeAreaView } from "react-native-safe-area-context";
+import { TAB_SCREEN_EDGES } from "../constants/SafeArea";
 import React, { useState } from "react";
-import { Text, View, StyleSheet, SafeAreaView, StatusBar } from "react-native";
+
+import { Text, View, StyleSheet, StatusBar } from "react-native";
 //components
 import { Title } from "../components/Title";
 import { Indication } from "../components/Indication";
@@ -38,7 +41,7 @@ export default ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.mainContainer}>
+    <SafeAreaView edges={TAB_SCREEN_EDGES} style={styles.mainContainer}>
       <StatusBar hidden={true} barStyle="light-content" />
       <View style={styles.listContainer}>
         <FailureReportList

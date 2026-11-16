@@ -1,6 +1,8 @@
-import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { TAB_SCREEN_EDGES } from "../constants/SafeArea";
 import React, { useState } from "react";
-import { StyleSheet, View, SafeAreaView } from "react-native";
+
+import { StatusBar, StyleSheet, View } from "react-native";
 //components
 import { Indication } from "../components/Indication";
 import { Title } from "../components/Title";
@@ -69,7 +71,7 @@ export default function AssistanceScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.mainContainer}>
+    <SafeAreaView edges={TAB_SCREEN_EDGES} style={styles.mainContainer}>
       <StatusBar hidden={true} barStyle="light-content" />
       <View style={styles.container}>
         <GridFlatList

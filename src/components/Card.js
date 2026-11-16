@@ -3,7 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  ImageBackground,
+  Image,
   TouchableOpacity,
 } from "react-native";
 //constants
@@ -24,11 +24,12 @@ export const Card = ({ title, image, triggerEvent }) => {
         style={{ backgroundColor: Colors.accent }}
         activeOpacity={0.5}
       >
-        <ImageBackground source={image} style={styles.bgImage}>
+        <View style={styles.bgImage}>
+          <Image source={image} style={styles.image} />
           <View style={styles.titleContainer}>
             <Text style={styles.title}>{title}</Text>
           </View>
-        </ImageBackground>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -55,6 +56,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     opacity: 0.8,
+  },
+  image: {
+    ...StyleSheet.absoluteFillObject,
+    width: "100%",
+    height: "100%",
   },
   bgImage: {
     width: "100%",
