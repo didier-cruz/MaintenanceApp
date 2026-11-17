@@ -1,12 +1,14 @@
-import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { TAB_SCREEN_EDGES } from "../constants/SafeArea";
 import React from "react";
-import { StyleSheet, Text, View, SafeAreaView } from "react-native";
+
+import { StatusBar, StyleSheet, Text, View } from "react-native";
 import Colors from "../constants/Colors";
 import Dimensions from "../constants/Dimensions";
 
 export default function AnnounceScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={TAB_SCREEN_EDGES} style={styles.container}>
       <StatusBar hidden={true} barStyle="light-content" />
       <View style={styles.body}>
         <View style={styles.titleContainer}>

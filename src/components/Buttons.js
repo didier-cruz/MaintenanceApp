@@ -1,11 +1,7 @@
 import React from "react";
-import { StyleSheet, View, TouchableOpacity } from "react-native";
-import { Button } from "react-native-elements";
+import { StyleSheet, View, Text, TouchableOpacity, Pressable } from "react-native";
 import Colors from "../constants/Colors";
 import Dimensions from "../constants/Dimensions";
-//redux
-import { useDispatch, useSelector } from "react-redux";
-import { toggleAccess } from "../store/actions/access";
 
 /**
  * Button used to Confirm Screens
@@ -15,13 +11,18 @@ import { toggleAccess } from "../store/actions/access";
  */
 export const ConfirmButton = ({ buttonText, onPress }) => {
   return (
-    <Button
-      buttonStyle={styles.confirmButton}
-      title={buttonText}
-      titleStyle={styles.confirmButtonText}
-      containerStyle={styles.confirmButtonContainer}
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={buttonText}
+      android_ripple={{ color: Colors.accent }}
+      style={({ pressed }) => [
+        styles.confirmButton,
+        pressed && styles.pressed,
+      ]}
       onPress={onPress}
-    />
+    >
+      <Text style={styles.confirmButtonText}>{buttonText}</Text>
+    </Pressable>
   );
 };
 
@@ -33,7 +34,12 @@ export const ConfirmButton = ({ buttonText, onPress }) => {
 export const CancelButton = ({ onPress }) => {
   return (
     <View style={styles.cancelButtonContainer}>
-      <TouchableOpacity style={styles.cancelButton} onPress={onPress}>
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel="Cerrar"
+        style={styles.cancelButton}
+        onPress={onPress}
+      >
         <View
           style={{
             ...styles.cancelButtonline,
@@ -59,36 +65,44 @@ export const CancelButton = ({ onPress }) => {
  * @returns ExitButton
  */
 export const ExitButton = ({ text, onPress }) => {
-  const dispatch = useDispatch();
-  const ManageAccessHandler = () => {
-    dispatch(toggleAccess(access));
-  };
   return (
-    <Button
-      title={text}
-      type="outline"
-      buttonStyle={{
-        backgroundColor: Colors.complementary,
-        borderColor: Colors.accent,
-        borderRadius: 100,
-        borderWidth: 3,
-      }}
-      containerStyle={{ marginRight: 10 }}
-      titleStyle={{ color: Colors.accent, fontSize: 18 }}
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={text}
+      style={({ pressed }) => [styles.exitButton, pressed && styles.pressed]}
       onPress={onPress}
-    />
+    >
+      <Text style={styles.exitButtonText}>{text}</Text>
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
-  confirmButtonContainer: {
-    width: "100%",
+  pressed: {
+    opacity: 0.7,
   },
   confirmButton: {
     width: "100%",
     height: 75,
     borderRadius: 100,
     backgroundColor: Colors.complementary,
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  exitButton: {
+    marginRight: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: Colors.complementary,
+    borderColor: Colors.accent,
+    borderRadius: 100,
+    borderWidth: 3,
+  },
+  exitButtonText: {
+    color: Colors.accent,
+    fontSize: 18,
+    textAlign: "center",
   },
   confirmButtonText: {
     color: Colors.accent,

@@ -1,32 +1,4 @@
 {
   "name": "MaintenanceApp",
-  "displayName": "MaintenanceApp",
-  "expo": {
-    "name": "MaintenanceApp",
-    "slug": "MaintenanceApp",
-    "version": "1.0.0",
-    "icon": "./src/assets/icons/iconApp.png",
-    "splash": {
-      "image": "./src/assets/icons/Logo.jpg",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "assetBundlePatterns": ["**/*"],
-    "packagerOpts": {
-      "config": "metro.config.js",
-      "sourceExts": [
-        "expo.ts",
-        "expo.tsx",
-        "expo.js",
-        "expo.jsx",
-        "ts",
-        "tsx",
-        "js",
-        "jsx",
-        "json",
-        "wasm",
-        "svg"
-      ]
-    }
-  }
+  "displayName": "MaintenanceApp"
 }

@@ -7,39 +7,35 @@ import CorrectiveMaintenance from "../screens/CorrectiveMaintenanceScreen";
 //components
 import Colors from "../constants/Colors";
 
-export default () => {
-  const Tab = createMaterialTopTabNavigator();
-  const PreventiveMaintenanceMemo = memo(PreventiveMaintenance);
-  const CorrectiveMaintenanceMemo = memo(CorrectiveMaintenance);
+const Tab = createMaterialTopTabNavigator();
+const PreventiveMaintenanceMemo = memo(PreventiveMaintenance);
+const CorrectiveMaintenanceMemo = memo(CorrectiveMaintenance);
 
+export default function TopTabs() {
   return (
     <Tab.Navigator
-      tabBarOptions={{
-        activeTintColor: Colors.accent,
-        inactiveTintColor: Colors.inactive,
-        style: styles.style,
-        indicatorStyle: styles.indicatorStyle,
-        labelStyle: styles.labelStyle,
-        pressColor: Colors.accent,
+      screenOptions={{
+        tabBarActiveTintColor: Colors.accent,
+        tabBarInactiveTintColor: Colors.inactive,
+        tabBarStyle: styles.style,
+        tabBarIndicatorStyle: styles.indicatorStyle,
+        tabBarLabelStyle: styles.labelStyle,
+        tabBarPressColor: Colors.accent,
       }}
     >
       <Tab.Screen
         name="Preventive"
         component={PreventiveMaintenanceMemo}
-        options={{
-          title: "Preventivo",
-        }}
+        options={{ title: "Preventivo" }}
       />
       <Tab.Screen
         name="Corrective"
         component={CorrectiveMaintenanceMemo}
-        options={{
-          title: "Correctivo",
-        }}
+        options={{ title: "Correctivo" }}
       />
     </Tab.Navigator>
   );
-};
+}
 
 const styles = StyleSheet.create({
   style: { backgroundColor: Colors.complementary },

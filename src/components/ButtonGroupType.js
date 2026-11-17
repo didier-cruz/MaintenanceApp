@@ -1,8 +1,7 @@
 import React from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View, Text, Pressable } from "react-native";
 import Dimensions from "../constants/Dimensions";
 import Colors from "../constants/Colors";
-import { ButtonGroup } from "react-native-elements";
 
 /**
  *Group of buttons that show the type of different options, you can choose only one
@@ -13,17 +12,32 @@ import { ButtonGroup } from "react-native-elements";
  */
 export const ButtonGroupType = ({ buttons, updateIndex, selectedIndex }) => {
   return (
-    <ButtonGroup
-      onPress={updateIndex}
-      selectedIndex={selectedIndex}
-      buttons={buttons}
-      textStyle={styles.textButtonStyle}
-      containerStyle={styles.fragmentContainer}
-      innerBorderStyle={{ width: 0 }}
-      buttonContainerStyle={styles.fragmentButtonContainer}
-      selectedTextStyle={styles.fragmentTextSelectedStyle}
-      selectedButtonStyle={styles.fragmentSelectedButton}
-    />
+    <View style={styles.fragmentContainer} accessibilityRole="tablist">
+      {buttons.map((title, index) => {
+        const selected = index === selectedIndex;
+        return (
+          <Pressable
+            key={title}
+            accessibilityRole="tab"
+            accessibilityState={{ selected }}
+            onPress={() => updateIndex(index)}
+            style={[
+              styles.fragmentButtonContainer,
+              selected && styles.fragmentSelectedButton,
+            ]}
+          >
+            <Text
+              style={[
+                styles.textButtonStyle,
+                selected && styles.fragmentTextSelectedStyle,
+              ]}
+            >
+              {title}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
   );
 };
 
@@ -33,18 +47,19 @@ const styles = StyleSheet.create({
     color: Colors.complementary,
     fontSize: 15,
     fontWeight: "bold",
-    marginHorizontal: 20,
     textAlign: "center",
   },
   fragmentContainer: {
+    flexDirection: "row",
     height: HeightTitleContainer,
-    borderWidth: 0,
-    borderColor: Colors.complementary,
     marginVertical: 10,
-    marginHorizontal: 0,
   },
   fragmentButtonContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 2,
+    borderColor: Colors.complementary,
   },
   fragmentSelectedButton: {
     backgroundColor: Colors.complementary,

@@ -1,15 +1,12 @@
 import { TOGGLE_ACCESS } from "../actions/access";
 
-const initialState = {
-  access: true,
-};
+/** `true` while the user is outside a plantel (must mark attendance first). */
+const initialState = true;
 
 const accessReducer = (state = initialState, action) => {
   switch (action.type) {
     case TOGGLE_ACCESS:
-      console.log(`El estado de accessReducer es: ${state}`);
-      console.log(`El action.access en accessReducer es:  ${action.access}`);
-      return !action.access;
+      return !state;
     default:
       return state;
   }
