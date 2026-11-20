@@ -18,6 +18,12 @@ test('catalog matches the VOSOA forms', () => {
   expect(tunel).toHaveLength(18);
   expect(tunel[11].text).toMatch(/detector de metales/);
   expect(tunel[12].allowsNA).toBe(true);
+  for (const tag of ['HZA0.331-BT4', 'HZA0.331-BTA']) {
+    const items = findEquipment(tag).equipment.items;
+    expect(items).toHaveLength(17);
+    expect(items[4].text).toMatch(/sensores ópticos/);
+  }
+  expect(findEquipment('HZA0.331-BT1').equipment.items).toHaveLength(16);
 });
 
 test('a Malo becomes an open fault on completion and disappears if changed back', () => {

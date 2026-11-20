@@ -121,13 +121,17 @@ const criba = ({ secundaria = false } = {}) =>
     secundaria ? "Estado de limpieza de la máquina, estructuras y accesos." : "Verificar orden y limpieza de la zona.",
   ].filter(Boolean);
 
-/** Banda transportadora. La Banda Túnel agrega el detector de metales y la estructura del túnel. */
-const banda = ({ tunel = false } = {}) =>
+/**
+ * Banda transportadora. La Banda Túnel agrega el detector de metales y la estructura del túnel;
+ * `sensor` agrega la revisión de sensores ópticos (solo BT4 y BTA de la Terciaria los llevan).
+ */
+const banda = ({ tunel = false, sensor = false } = {}) =>
   [
     "Verificar el buen estado de la tolva de descarga y laterales, verificando que no existan fugas de material.",
     "Verificar estado de limpiadores del rodo motriz de la banda (que no tengan material acumulado o desajustes).",
     "Verificar estado de limpiadores lateral y trasero de la banda (que no tengan material acumulado o desajustes).",
     "Verificar temperaturas y vibración en los rodamientos de los rodos motriz y de cola.",
+    sensor ? "Verificar el funcionamiento general de los sensores ópticos: detectan luz (visible, infrarroja o láser)." : null,
     "Estado físico del empalme y alineamiento de la banda.",
     "Estado físico de la banda.",
     "Verificar que todos los rodillos giren libremente y no presenten desgaste.",
@@ -207,9 +211,9 @@ export const AREAS = [
       eq("HZA0.331-BT1", "10103680", "Banda descarga trituradora impacto", "A", banda()),
       eq("HZA0.331-BT2", "10103683", "Banda alimentación criba #3", "A", banda()),
       eq("HZA0.331-BT3", "10103687", "Banda retorno trituradora impacto", "A", banda()),
-      eq("HZA0.331-BT4", "10103706", "Banda transporte arena triturada", "A", banda()),
+      eq("HZA0.331-BT4", "10103706", "Banda transporte arena triturada", "A", banda({ sensor: true })),
       eq("HZA0.331-BT7", "10103714", "Banda transporte grava 3/8", "A", banda()),
-      eq("HZA0.331-BTA", "10103710", "Banda transporte grava #1", "A", banda()),
+      eq("HZA0.331-BTA", "10103710", "Banda transporte grava #1", "A", banda({ sensor: true })),
     ],
   },
 ];
