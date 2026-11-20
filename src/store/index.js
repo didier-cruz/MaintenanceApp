@@ -1,15 +1,32 @@
-import { combineReducers, legacy_createStore as createStore } from "redux";
-import accessReducer from "./reducers/access";
-import overlayReducer from "./reducers/overlay";
+import { legacy_createStore as createStore } from "redux";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import pocReducer from "./poc";
 
-/**
- * Root reducer: one slice per reducer.
- */
-const rootReducer = combineReducers({
-  access: accessReducer,
-  overlay: overlayReducer,
-});
+const STORAGE_KEY = "maintenanceapp.poc.v1";
 
-export const createAppStore = () => createStore(rootReducer);
+export const createAppStore = () => createStore(pocReducer);
 
-export default createAppStore();
+const store = createAppStore();
+
+/** Loads the saved state from the device. Resolves even if storage fails. */
+export async function hydrateStore() {
+  try {
+    const raw = await AsyncStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      store.dispatch({ type: "HYDRATE", state: JSON.parse(raw) });
+    }
+  } catch (e) {
+    console.warn("No se pudo leer el estado guardado", e);
+  }
+  let timer = null;
+  store.subscribe(() => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(store.getState())).catch((e) =>
+        console.warn("No se pudo guardar el estado", e),
+      );
+    }, 300);
+  });
+}
+
+export default store;

@@ -2,31 +2,18 @@ import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import App from '../src/App';
 
-jest.mock('react-native-safe-area-context', () =>
-  require('react-native-safe-area-context/jest/mock').default,
-);
-
-jest.mock('react-native-pager-view', () => {
-  const { View } = require('react-native');
-  return View;
-});
-
-jest.mock('@react-native-vector-icons/fontawesome', () => 'FontAwesome');
-jest.mock('@react-native-vector-icons/material-icons', () => 'MaterialIcons');
-
 jest.useFakeTimers();
 
-test('renders correctly', async () => {
+test('starts on the technician login screen', async () => {
   let renderer;
-  await ReactTestRenderer.act(() => {
+  await ReactTestRenderer.act(async () => {
     renderer = ReactTestRenderer.create(<App />);
   });
-  await ReactTestRenderer.act(() => {
+  await ReactTestRenderer.act(async () => {
     jest.runOnlyPendingTimers();
   });
-  // Initial state: user is outside a plantel, so the attendance screen shows.
-  expect(JSON.stringify(renderer.toJSON())).toContain('Control de Asistencia');
-  await ReactTestRenderer.act(() => {
+  expect(JSON.stringify(renderer.toJSON())).toContain('Nombre del técnico');
+  await ReactTestRenderer.act(async () => {
     renderer.unmount();
     jest.runOnlyPendingTimers();
   });
