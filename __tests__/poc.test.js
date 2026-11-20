@@ -14,6 +14,10 @@ test('catalog matches the VOSOA forms', () => {
   expect(crit).toEqual({ A: 24, B: 7 });
   expect(AREAS[0].equipment.reduce((n, e) => n + e.items.length, 0)).toBe(135);
   expect(findEquipment('HZA0.331-TB1').equipment.items).toHaveLength(17);
+  const tunel = findEquipment('HZA0.321-BT1').equipment.items;
+  expect(tunel).toHaveLength(18);
+  expect(tunel[11].text).toMatch(/detector de metales/);
+  expect(tunel[12].allowsNA).toBe(true);
 });
 
 test('a Malo becomes an open fault on completion and disappears if changed back', () => {
