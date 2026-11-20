@@ -4,7 +4,7 @@
 
 ## Qué incluye
 
-- **Datos reales:** las 3 áreas de trituración, los 31 equipos (etiqueta, número de activo, criticidad A/B) y los 414 puntos de revisión, según la versión rectificada del formulario VOSOA (20/11/2026).
+- **Datos reales:** las 3 áreas de trituración, los 31 equipos (etiqueta, número de activo, criticidad A/B) y los 415 puntos de revisión, según la versión rectificada del formulario VOSOA (20/11/2026).
 - **Asistencia:** llegada y salida con la hora real.
 - **QR por equipo:** cada equipo tiene una etiqueta QR (Informes → "Etiquetas QR de equipos"). Al escanearla desde Preventivo se abre directamente su checklist.
 - **Ronda por área:** equipos en tarjetas con foto y avance. Cada punto se marca Bueno, Malo o N/A (N/A solo en los puntos "si aplica"). Un Malo exige descripción.

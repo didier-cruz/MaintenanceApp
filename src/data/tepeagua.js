@@ -121,7 +121,7 @@ const criba = ({ secundaria = false } = {}) =>
     secundaria ? "Estado de limpieza de la máquina, estructuras y accesos." : "Verificar orden y limpieza de la zona.",
   ].filter(Boolean);
 
-/** Banda transportadora. La Banda Túnel agrega la revisión de la estructura del túnel. */
+/** Banda transportadora. La Banda Túnel agrega el detector de metales y la estructura del túnel. */
 const banda = ({ tunel = false } = {}) =>
   [
     "Verificar el buen estado de la tolva de descarga y laterales, verificando que no existan fugas de material.",
@@ -135,6 +135,7 @@ const banda = ({ tunel = false } = {}) =>
     "Verificar temperaturas y vibraciones anormales en motor y reductor.",
     "Verificar el estado de limpieza en motor y reductor, y el estado físico de caja de conexiones, corazas, conectores, cables eléctricos y fijación.",
     "Fugas de aceite en reductor.",
+    tunel ? "Verificar buen estado del detector de metales." : null,
     na("Estado físico de correas (si aplica)."),
     "Revisar estado físico y tensión del cable de paros de emergencia.",
     tunel ? "Estado físico de la estructura del túnel (deformación, corrosión, uniones y anclajes)." : null,
