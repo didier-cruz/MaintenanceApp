@@ -3,6 +3,9 @@ import { FlatList, Image, Modal, Pressable, StyleSheet, Text, TextInput, View } 
 import { useDispatch, useSelector } from "react-redux";
 import { findEquipment } from "../../data/tepeagua";
 import { Badge, Button, C, Card, CritBadge, fmtDateTime } from "../ui";
+import { equipmentPhoto } from "../images";
+import { PhotoThumb } from "../PhotoGallery";
+import { photosOf, usePhoto } from "../photos";
 
 export default function CorrectiveScreen() {
   const dispatch = useDispatch();
@@ -46,27 +49,31 @@ export default function CorrectiveScreen() {
         renderItem={({ item: f }) => {
           const found = findEquipment(f.equipmentId);
           return (
-            <Card style={st.card}>
-              <View style={st.rowBetween}>
-                <Text style={st.tag}>{f.equipmentId}</Text>
-                <View style={st.row}>
-                  <CritBadge criticality={f.criticality} />
-                  <View style={st.w6} />
-                  <Badge label={f.status === "open" ? "Abierta" : "Atendida"} tone={f.status === "open" ? "bad" : "good"} />
+            <Card style={[st.card, f.status === "open" ? st.cardOpen : st.cardDone]}>
+              <View style={st.row}>
+                <Image source={equipmentPhoto(found.equipment)} style={st.avatar} />
+                <View style={st.flex}>
+                  <View style={st.rowBetween}>
+                    <Text style={st.tag}>{f.equipmentId}</Text>
+                    <View style={st.row}>
+                      <CritBadge criticality={f.criticality} />
+                      <View style={st.w6} />
+                      <Badge label={f.status === "open" ? "Abierta" : "Atendida"} tone={f.status === "open" ? "bad" : "good"} />
+                    </View>
+                  </View>
+                  <Text style={st.eqName}>{found?.equipment.name}</Text>
+                  <Text style={st.areaName}>{found?.area.name}</Text>
                 </View>
               </View>
-              <Text style={st.eqName}>
-                {found?.equipment.name} · {found?.area.name}
-              </Text>
               <Text style={st.item}>{f.itemText}</Text>
-              <View style={st.row}>
-                {f.photo ? (
-                  <Pressable onPress={() => setPreview(f.photo)}>
-                    <Image source={{ uri: f.photo }} style={st.thumb} />
-                  </Pressable>
-                ) : null}
-                <Text style={st.note}>“{f.note}”</Text>
-              </View>
+              <Text style={st.note}>“{f.note}”</Text>
+              {photosOf(f).length ? (
+                <View style={st.photos}>
+                  {photosOf(f).map((id) => (
+                    <PhotoThumb key={id} id={id} size={56} onPress={() => setPreview(id)} />
+                  ))}
+                </View>
+              ) : null}
               <Text style={st.meta}>
                 Reportada {fmtDateTime(f.openedAt)} por {f.reportedBy}
               </Text>
@@ -108,11 +115,16 @@ export default function CorrectiveScreen() {
 
       <Modal visible={Boolean(preview)} transparent animationType="fade" onRequestClose={() => setPreview(null)}>
         <Pressable style={st.backdrop} onPress={() => setPreview(null)}>
-          {preview ? <Image source={{ uri: preview }} style={st.full} resizeMode="contain" /> : null}
+          {preview ? <FullPhoto id={preview} /> : null}
         </Pressable>
       </Modal>
     </View>
   );
+}
+
+function FullPhoto({ id }) {
+  const uri = usePhoto(id);
+  return uri ? <Image source={{ uri }} style={st.full} resizeMode="contain" /> : null;
 }
 
 const Tab = ({ label, on, onPress }) => (
@@ -123,22 +135,27 @@ const Tab = ({ label, on, onPress }) => (
 
 const st = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.bg },
-  tabs: { flexDirection: "row", margin: 16, marginBottom: 0, backgroundColor: C.line, borderRadius: 10, padding: 3 },
-  tab: { flex: 1, height: 38, alignItems: "center", justifyContent: "center", borderRadius: 8 },
-  tabOn: { backgroundColor: "#fff" },
+  tabs: { flexDirection: "row", margin: 16, marginBottom: 0, backgroundColor: "#DCE4EE", borderRadius: 22, padding: 4 },
+  tab: { flex: 1, height: 38, alignItems: "center", justifyContent: "center", borderRadius: 19 },
+  tabOn: { backgroundColor: C.navy },
   tabText: { fontWeight: "700", color: C.muted },
-  tabTextOn: { color: C.ink },
+  tabTextOn: { color: "#fff" },
   body: { padding: 16, paddingBottom: 40 },
   empty: { textAlign: "center", color: C.muted, marginTop: 48, fontSize: 15, lineHeight: 22 },
-  card: { marginBottom: 12 },
+  card: { marginBottom: 12, borderLeftWidth: 5 },
+  cardOpen: { borderLeftColor: C.bad },
+  cardDone: { borderLeftColor: C.good },
+  flex: { flex: 1 },
+  avatar: { width: 58, height: 58, borderRadius: 29, marginRight: 12 },
+  areaName: { color: C.muted, fontSize: 13 },
+  photos: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
   row: { flexDirection: "row", alignItems: "center" },
   rowBetween: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   w6: { width: 6 },
   tag: { fontFamily: "monospace", fontWeight: "700", color: C.inkSoft, fontSize: 13 },
-  eqName: { fontSize: 16, fontWeight: "800", color: C.ink, marginTop: 6 },
-  item: { fontSize: 15, color: C.inkSoft, marginTop: 4, marginBottom: 8 },
-  thumb: { width: 56, height: 56, borderRadius: 8, marginRight: 10 },
-  note: { flex: 1, fontStyle: "italic", color: C.bad, fontSize: 15 },
+  eqName: { fontSize: 16, fontWeight: "800", color: C.navy, marginTop: 4 },
+  item: { fontSize: 15, color: C.inkSoft, marginTop: 10, marginBottom: 4 },
+  note: { fontStyle: "italic", color: C.bad, fontSize: 15 },
   meta: { color: C.muted, fontSize: 12, marginTop: 8 },
   mt10: { marginTop: 10 },
   resolved: { color: C.good, fontWeight: "700", marginTop: 8 },

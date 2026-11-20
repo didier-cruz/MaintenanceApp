@@ -1,4 +1,5 @@
 import { findEquipment } from "../data/tepeagua";
+import { photosOf } from "../poc/photos";
 
 export const todayKey = (d = new Date()) => {
   const p = (n) => String(n).padStart(2, "0");
@@ -13,7 +14,7 @@ export const initialState = {
   onSite: false,
   attendance: [], // { id, type: 'in'|'out', at, flag }
   rounds: {}, // roundId -> { id, areaId, date, startedAt, closedAt, comments, signature, technician, pdfPath }
-  inspections: {}, // key -> { roundId, equipmentId, results: { itemId: { outcome, note, photo } }, comment, completedAt }
+  inspections: {}, // key -> { roundId, equipmentId, results: { itemId: { outcome, note, photos: [photoId] } }, comment, completedAt }
   faults: {}, // id -> { id, roundId, areaId, equipmentId, itemId, ... status }
 };
 
@@ -54,7 +55,7 @@ const syncFaults = (faults, inspection, areaId, technician, at) => {
         itemText: item.text,
         criticality: equipment.criticality,
         note: r.note,
-        photo: r.photo ?? null,
+        photos: photosOf(r),
         openedAt: prev?.openedAt ?? at,
         reportedBy: technician,
         status: prev?.status ?? "open",

@@ -4,7 +4,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector, useStore } from "react-redux";
 import { findArea } from "../../data/tepeagua";
 import { areaProgress, roundIdFor } from "../../store/poc";
-import { Button, C, Card, fmtTime } from "../ui";
+import { Button, C, PhotoCard, fmtTime } from "../ui";
+import { areaPhoto } from "../images";
 import SignaturePad, { SignaturePreview } from "../SignaturePad";
 import { generateVosoaPdf, sharePdf } from "../report";
 
@@ -40,7 +41,7 @@ export default function CloseRoundScreen({ route, navigation }) {
 
   return (
     <ScrollView style={st.screen} contentContainerStyle={st.body} keyboardShouldPersistTaps="handled">
-      <Card>
+      <PhotoCard source={areaPhoto(areaId)} height={210}>
         <Text style={st.area}>{area.name}</Text>
         <Text style={st.meta}>
           Inicio {round ? fmtTime(round.startedAt) : "—"} · Cierre {fmtTime(Date.now())}
@@ -48,9 +49,9 @@ export default function CloseRoundScreen({ route, navigation }) {
         <View style={st.stats}>
           <Stat value={`${p.done}/${p.total}`} label="equipos" />
           <Stat value={p.points} label="puntos" />
-          <Stat value={p.bad} label="en Malo" tone={p.bad ? C.bad : C.ink} />
+          <Stat value={p.bad} label="en Malo" tone={p.bad ? "#FF8A80" : "#fff"} />
         </View>
-      </Card>
+      </PhotoCard>
 
       <Text style={st.label}>Comentarios de la ronda</Text>
       <TextInput
@@ -105,7 +106,7 @@ export default function CloseRoundScreen({ route, navigation }) {
   );
 }
 
-const Stat = ({ value, label, tone = C.ink }) => (
+const Stat = ({ value, label, tone = "#fff" }) => (
   <View style={st.stat}>
     <Text style={[st.statValue, { color: tone }]}>{value}</Text>
     <Text style={st.statLabel}>{label}</Text>
@@ -115,12 +116,12 @@ const Stat = ({ value, label, tone = C.ink }) => (
 const st = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.bg },
   body: { padding: 16, paddingBottom: 48 },
-  area: { fontSize: 20, fontWeight: "800", color: C.ink },
-  meta: { color: C.muted, marginTop: 2 },
+  area: { fontSize: 24, fontWeight: "800", color: "#fff" },
+  meta: { color: "rgba(255,255,255,0.8)", marginTop: 2 },
   stats: { flexDirection: "row", marginTop: 14 },
   stat: { flex: 1, alignItems: "center" },
   statValue: { fontSize: 24, fontWeight: "800" },
-  statLabel: { color: C.muted, fontSize: 13 },
+  statLabel: { color: "rgba(255,255,255,0.8)", fontSize: 13 },
   label: { fontSize: 14, fontWeight: "700", color: C.inkSoft, marginTop: 18, marginBottom: 6 },
   input: {
     minHeight: 80,
@@ -133,12 +134,12 @@ const st = StyleSheet.create({
     color: C.ink,
     textAlignVertical: "top",
   },
-  tech: { fontSize: 18, fontWeight: "700", color: C.ink },
+  tech: { fontSize: 18, fontWeight: "800", color: C.navy },
   mt16: { marginTop: 16 },
   right: { alignSelf: "flex-end" },
   signBtn: { minHeight: 90, borderStyle: "dashed" },
   modal: { flex: 1, backgroundColor: C.bg, padding: 20, justifyContent: "center" },
-  modalTitle: { fontSize: 22, fontWeight: "800", color: C.ink },
+  modalTitle: { fontSize: 22, fontWeight: "800", color: C.navy },
   modalSub: { color: C.muted, marginTop: 4, marginBottom: 16 },
   hint: { color: C.muted, fontSize: 13, textAlign: "center", marginTop: 8 },
 });

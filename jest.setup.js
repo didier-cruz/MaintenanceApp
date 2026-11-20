@@ -1,3 +1,4 @@
+/* eslint-env jest */
 /* Native modules that have no JS implementation under Jest. */
 jest.mock('@react-native-async-storage/async-storage', () => {
   const data = new Map();
@@ -5,8 +6,8 @@ jest.mock('@react-native-async-storage/async-storage', () => {
     __esModule: true,
     default: {
       getItem: jest.fn(async (k) => (data.has(k) ? data.get(k) : null)),
-      setItem: jest.fn(async (k, v) => void data.set(k, v)),
-      removeItem: jest.fn(async (k) => void data.delete(k)),
+      setItem: jest.fn(async (k, v) => { data.set(k, v); }),
+      removeItem: jest.fn(async (k) => { data.delete(k); }),
     },
   };
 });
@@ -17,10 +18,11 @@ jest.mock('react-native-share', () => ({ __esModule: true, default: { open: jest
 jest.mock('react-native-image-picker', () => ({ launchCamera: jest.fn() }));
 jest.mock('react-native-svg', () => {
   const { View } = require('react-native');
-  return { __esModule: true, default: View, Path: View };
+  return { __esModule: true, default: View, Path: View, Defs: View, LinearGradient: View, Stop: View, Rect: View };
 });
 jest.mock('react-native-safe-area-context', () =>
   require('react-native-safe-area-context/jest/mock').default,
 );
 jest.mock('@react-native-vector-icons/fontawesome', () => 'FontAwesome');
 jest.mock('@react-native-vector-icons/material-icons', () => 'MaterialIcons');
+jest.mock('react-native-camera-kit', () => ({ Camera: 'Camera', CameraType: { Back: 'back' } }));

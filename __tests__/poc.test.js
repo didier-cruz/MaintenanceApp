@@ -1,6 +1,7 @@
 import pocReducer, { initialState, roundIdFor, areaProgress, inspectionKey } from '../src/store/poc';
 import { AREAS, findEquipment } from '../src/data/tepeagua';
 import { buildVosoaHtml } from '../src/poc/report';
+import { parseQr, qrPayload, buildQrLabelsHtml } from '../src/poc/qr';
 
 const AREA = AREAS[0];
 const EQ = AREA.equipment[0];
@@ -11,7 +12,7 @@ test('catalog matches the VOSOA forms', () => {
   expect(AREAS.map((a) => a.equipment.length)).toEqual([10, 9, 12]);
   const crit = AREAS.flatMap((a) => a.equipment).reduce((m, e) => ({ ...m, [e.criticality]: (m[e.criticality] || 0) + 1 }), {});
   expect(crit).toEqual({ A: 24, B: 7 });
-  expect(AREAS[0].equipment.reduce((n, e) => n + e.items.length, 0)).toBe(126);
+  expect(AREAS[0].equipment.reduce((n, e) => n + e.items.length, 0)).toBe(135);
   expect(findEquipment('HZA0.331-TB1').equipment.items).toHaveLength(17);
 });
 
@@ -51,4 +52,30 @@ test('VOSOA html lists every equipment and the signature', () => {
   expect(html).toContain('Todo &lt;ok&gt;');
   expect(html).toContain('<path d="M1,1 L2,2"');
   expect(s.inspections[inspectionKey(ROUND, EQ.id)].completedAt).toBeTruthy();
+});
+
+test('QR codes resolve to their equipment and the label sheet covers all 31', () => {
+  expect(parseQr(qrPayload('HZA0.311-TY1')).equipment.name).toBe('Tolva metálica de alimentación');
+  expect(parseQr(' vosoa:HZA0.331-BTA ').area.id).toBe('HZA0.331');
+  expect(parseQr('HZA0.321-TI1').equipment.id).toBe('HZA0.321-TI1');
+  expect(parseQr('https://example.com')).toBeNull();
+  const html = buildQrLabelsHtml();
+  expect((html.match(/class="label"/g) || []).length).toBe(31);
+  expect((html.match(/class="qr"><svg/g) || []).length).toBe(31);
+});
+
+test('item galleries go to the fault and to the PDF annex', () => {
+  const base = { areaId: AREA.id, roundId: ROUND, equipmentId: EQ.id, at: Date.now() };
+  const [first, second] = EQ.items;
+  const s = run([
+    { type: 'SET_RESULT', ...base, itemId: first.id, patch: { outcome: 'bad', note: 'Fuga', photos: ['ph_a', 'ph_b'] } },
+    { type: 'SET_RESULT', ...base, itemId: second.id, patch: { outcome: 'good', photos: ['ph_c'] } },
+    { type: 'SET_ALL_GOOD', ...base },
+    { type: 'COMPLETE_EQUIPMENT', ...base },
+    { type: 'CLOSE_ROUND', roundId: ROUND, comments: '', signature: null, at: Date.now() },
+  ]);
+  expect(s.faults[`${ROUND}|${first.id}`].photos).toEqual(['ph_a', 'ph_b']);
+  const html = buildVosoaHtml(s, ROUND, { ph_a: 'data:image/jpeg;base64,AAA', ph_b: 'data:image/jpeg;base64,BBB', ph_c: 'data:image/jpeg;base64,CCC' });
+  expect(html).toContain('Anexo — Evidencia fotográfica');
+  expect((html.match(/<img src="data:image\/jpeg/g) || []).length).toBe(3);
 });

@@ -18,7 +18,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <StatusBar barStyle="light-content" backgroundColor={C.ink} />
+        <StatusBar barStyle="light-content" backgroundColor={C.navy} />
         {ready ? (
           <Provider store={store}>
             <NavigationContainer>
@@ -27,7 +27,7 @@ export default function App() {
           </Provider>
         ) : (
           <View style={styles.loading}>
-            <ActivityIndicator color={C.accent} size="large" />
+            <ActivityIndicator color={C.sky} size="large" />
           </View>
         )}
       </SafeAreaProvider>
@@ -37,5 +37,5 @@ export default function App() {
 
 const styles = {
   root: { flex: 1 },
-  loading: { flex: 1, backgroundColor: C.ink, alignItems: "center", justifyContent: "center" },
+  loading: { flex: 1, backgroundColor: C.navy, alignItems: "center", justifyContent: "center" },
 };

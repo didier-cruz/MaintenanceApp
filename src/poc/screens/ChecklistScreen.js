@@ -2,7 +2,6 @@ import React, { useLayoutEffect, useMemo, useRef } from "react";
 import {
   Alert,
   FlatList,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -12,10 +11,12 @@ import {
   View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { launchCamera } from "react-native-image-picker";
 import { findEquipment } from "../../data/tepeagua";
 import { inspectionKey, roundIdFor } from "../../store/poc";
-import { Button, C, CritBadge } from "../ui";
+import { Badge, Button, C, PhotoCard, ProgressBar } from "../ui";
+import { equipmentPhoto } from "../images";
+import PhotoGallery from "../PhotoGallery";
+import { photosOf } from "../photos";
 
 const OUTCOMES = [
   { key: "good", label: "Bueno", color: C.good, bg: C.goodBg },
@@ -25,7 +26,7 @@ const OUTCOMES = [
 
 export default function ChecklistScreen({ route, navigation }) {
   const { areaId, equipmentId } = route.params;
-  const { equipment } = findEquipment(equipmentId);
+  const { equipment, area } = findEquipment(equipmentId);
   const roundId = roundIdFor(areaId);
   const dispatch = useDispatch();
   const round = useSelector((s) => s.rounds[roundId]);
@@ -56,30 +57,6 @@ export default function ChecklistScreen({ route, navigation }) {
 
   const answered = equipment.items.filter((i) => results[i.id]?.outcome).length;
   const missingNotes = equipment.items.filter((i) => results[i.id]?.outcome === "bad" && !results[i.id]?.note?.trim());
-
-  const takePhoto = async (itemId) => {
-    try {
-      const res = await launchCamera({
-        mediaType: "photo",
-        includeBase64: true,
-        maxWidth: 900,
-        maxHeight: 900,
-        quality: 0.6,
-        saveToPhotos: false,
-      });
-      if (res.didCancel) return;
-      if (res.errorCode) {
-        Alert.alert("Cámara", res.errorMessage || res.errorCode);
-        return;
-      }
-      const a = res.assets?.[0];
-      if (a?.base64) {
-        set(itemId, { photo: `data:${a.type || "image/jpeg"};base64,${a.base64}` });
-      }
-    } catch (e) {
-      Alert.alert("Cámara", e.message);
-    }
-  };
 
   const finish = () => {
     if (answered < equipment.items.length) {
@@ -112,21 +89,39 @@ export default function ChecklistScreen({ route, navigation }) {
         keyboardShouldPersistTaps="handled"
         onScrollToIndexFailed={() => {}}
         ListHeaderComponent={
-          <View style={st.header}>
-            <Text style={st.eqName}>{equipment.name}</Text>
-            <View style={st.row}>
-              <CritBadge criticality={equipment.criticality} />
-              <Text style={st.meta}>  Activo {equipment.asset}</Text>
-            </View>
-            <Text style={st.counter}>
-              {answered} de {equipment.items.length} puntos
+          <PhotoCard
+            source={equipmentPhoto(equipment)}
+            height={200}
+            radius={0}
+            style={st.hero}
+            top={
+              <>
+                <Badge label={area.name} tone="dark" />
+                <Badge
+                  label={`Criticidad ${equipment.criticality}`}
+                  tone={equipment.criticality === "A" ? "bad" : "warn"}
+                />
+              </>
+            }
+          >
+            <Text style={st.heroTag}>
+              {equipment.tag} · Activo {equipment.asset}
             </Text>
-          </View>
+            <Text style={st.eqName}>{equipment.name}</Text>
+            <View style={st.progressRow}>
+              <View style={st.flex}>
+                <ProgressBar value={answered} total={equipment.items.length} tone={C.sky} />
+              </View>
+              <Text style={st.counter}>
+                {answered}/{equipment.items.length} puntos
+              </Text>
+            </View>
+          </PhotoCard>
         }
         renderItem={({ item }) => {
           const r = results[item.id] ?? {};
           return (
-            <View style={[st.item, r.outcome === "bad" && st.itemBad]}>
+            <View style={[st.item, st.itemPad, r.outcome === "bad" && st.itemBad, r.outcome === "good" && st.itemGood]}>
               <View style={st.row}>
                 <Text style={st.n}>{item.n}</Text>
                 <Text style={st.text}>{item.text}</Text>
@@ -149,34 +144,26 @@ export default function ChecklistScreen({ route, navigation }) {
                 })}
               </View>
               {r.outcome === "bad" ? (
-                <View style={st.badBox}>
-                  <TextInput
-                    editable={!locked}
-                    value={r.note ?? ""}
-                    onChangeText={(note) => set(item.id, { note })}
-                    placeholder="Describa la falla (obligatorio)"
-                    placeholderTextColor={C.muted}
-                    multiline
-                    style={[st.note, !r.note?.trim() && st.noteMissing]}
-                  />
-                  <View style={st.photoRow}>
-                    {r.photo ? <Image source={{ uri: r.photo }} style={st.thumb} /> : null}
-                    {locked ? null : (
-                      <Button
-                        small
-                        variant="outline"
-                        title={r.photo ? "Repetir foto" : "📷  Tomar foto"}
-                        onPress={() => takePhoto(item.id)}
-                      />
-                    )}
-                  </View>
-                </View>
+                <TextInput
+                  editable={!locked}
+                  value={r.note ?? ""}
+                  onChangeText={(note) => set(item.id, { note })}
+                  placeholder="Describa la falla (obligatorio)"
+                  placeholderTextColor={C.muted}
+                  multiline
+                  style={[st.note, !r.note?.trim() && st.noteMissing]}
+                />
               ) : null}
+              <PhotoGallery
+                photos={photosOf(r)}
+                locked={locked}
+                onChange={(photos) => set(item.id, { photos, photo: undefined })}
+              />
             </View>
           );
         }}
         ListFooterComponent={
-          <View>
+          <View style={st.itemPad}>
             <Text style={st.label}>Comentarios del equipo</Text>
             <TextInput
               editable={!locked}
@@ -197,22 +184,44 @@ export default function ChecklistScreen({ route, navigation }) {
 
 const st = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.bg },
-  body: { padding: 16, paddingBottom: 48 },
-  header: { marginBottom: 12 },
-  eqName: { fontSize: 20, fontWeight: "800", color: C.ink, marginBottom: 6 },
+  body: { paddingBottom: 48 },
+  flex: { flex: 1 },
+  hero: { marginBottom: 14 },
+  heroTag: { color: "#9BE3FF", fontWeight: "800", fontSize: 13, letterSpacing: 0.4 },
+  eqName: { fontSize: 24, fontWeight: "800", color: "#fff", marginTop: 2 },
+  progressRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
   row: { flexDirection: "row", alignItems: "center" },
-  meta: { color: C.muted, fontSize: 14 },
-  counter: { marginTop: 8, color: C.inkSoft, fontWeight: "700" },
+  counter: { marginLeft: 10, color: "#fff", fontWeight: "800" },
+  itemPad: { marginHorizontal: 14 },
+  itemGood: { borderLeftColor: C.good },
   item: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: C.line,
+    borderRadius: 14,
+    borderLeftWidth: 5,
+    borderLeftColor: C.line,
     padding: 14,
     marginBottom: 10,
+    shadowColor: "#0B1E33",
+    shadowOpacity: 0.07,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  itemBad: { borderColor: C.bad },
-  n: { width: 26, fontWeight: "800", color: C.muted, fontSize: 15, alignSelf: "flex-start" },
+  itemBad: { borderLeftColor: C.bad },
+  n: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: C.bg,
+    textAlign: "center",
+    lineHeight: 26,
+    fontWeight: "800",
+    color: C.navy,
+    fontSize: 13,
+    marginRight: 8,
+    alignSelf: "flex-start",
+    overflow: "hidden",
+  },
   text: { flex: 1, fontSize: 16, color: C.ink, lineHeight: 22 },
   choices: { flexDirection: "row", marginTop: 12, gap: 8 },
   choice: {
@@ -224,8 +233,8 @@ const st = StyleSheet.create({
     justifyContent: "center",
   },
   choiceText: { fontSize: 16, fontWeight: "800" },
-  badBox: { marginTop: 12 },
   note: {
+    marginTop: 12,
     minHeight: 64,
     borderWidth: 1.5,
     borderColor: C.line,
@@ -236,8 +245,6 @@ const st = StyleSheet.create({
     textAlignVertical: "top",
   },
   noteMissing: { borderColor: C.bad },
-  photoRow: { flexDirection: "row", alignItems: "center", marginTop: 10, gap: 10 },
-  thumb: { width: 64, height: 64, borderRadius: 8 },
   label: { fontSize: 14, fontWeight: "700", color: C.inkSoft, marginTop: 8, marginBottom: 6 },
   comment: {
     minHeight: 70,

@@ -1,15 +1,29 @@
-import React from "react";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useState } from "react";
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { AREAS } from "../../data/tepeagua";
 import { areaProgress, roundIdFor, todayKey } from "../../store/poc";
 import { Button, C, Card, ProgressBar, SectionTitle, fmtLongDate, fmtTime } from "../ui";
-import { sharePdf } from "../report";
+import { generateQrLabelsPdf, sharePdf } from "../report";
+import { areaPhoto } from "../images";
+import { clearPhotos } from "../photos";
 
 export default function ReportsScreen() {
   const dispatch = useDispatch();
   const state = useSelector((s) => s);
   const today = todayKey();
+  const [labelsBusy, setLabelsBusy] = useState(false);
+  const shareLabels = async () => {
+    setLabelsBusy(true);
+    try {
+      const path = await generateQrLabelsPdf();
+      await sharePdf(path, "Etiquetas QR de equipos");
+    } catch (e) {
+      Alert.alert("No se pudo generar el PDF", e.message);
+    } finally {
+      setLabelsBusy(false);
+    }
+  };
 
   let eqDone = 0;
   let eqTotal = 0;
@@ -35,7 +49,14 @@ export default function ReportsScreen() {
   const reset = () =>
     Alert.alert("Reiniciar demo", "Se borran rondas, fallas y asistencia de este teléfono.", [
       { text: "Cancelar", style: "cancel" },
-      { text: "Reiniciar", style: "destructive", onPress: () => dispatch({ type: "RESET_DEMO" }) },
+      {
+        text: "Reiniciar",
+        style: "destructive",
+        onPress: () => {
+          dispatch({ type: "RESET_DEMO" });
+          clearPhotos().catch(() => {});
+        },
+      },
     ]);
 
   return (
@@ -44,19 +65,20 @@ export default function ReportsScreen() {
       <Text style={st.sub}>{fmtLongDate(Date.now())} · Planta Tepeagua</Text>
 
       <View style={st.kpis}>
-        <Kpi value={`${compliance}%`} label="cumplimiento de la ronda" sub={`${eqDone} de ${eqTotal} equipos`} />
-        <Kpi value={points} label="puntos revisados" sub={`${bad} en Malo`} />
+        <Kpi value={`${compliance}%`} label="cumplimiento de la ronda" sub={`${eqDone} de ${eqTotal} equipos`} bg={C.navy} />
+        <Kpi value={points} label="puntos revisados" sub={`${bad} en Malo`} bg={C.accent} />
       </View>
       <View style={st.kpis}>
-        <Kpi value={openA} label="fallas abiertas crit. A" tone={openA ? C.bad : C.ink} />
-        <Kpi value={openB} label="fallas abiertas crit. B" tone={openB ? C.warn : C.ink} sub={`${resolvedToday} atendidas hoy`} />
+        <Kpi value={openA} label="fallas abiertas crit. A" bg={openA ? C.bad : "#5C6B7D"} />
+        <Kpi value={openB} label="fallas abiertas crit. B" sub={`${resolvedToday} atendidas hoy`} bg={openB ? "#C77700" : "#5C6B7D"} />
       </View>
 
       <SectionTitle>Avance por área</SectionTitle>
       {perArea.map(({ area, p, round }) => (
         <Card key={area.id} style={st.mb10}>
           <View style={st.rowBetween}>
-            <Text style={st.areaName}>{area.name}</Text>
+            <Image source={areaPhoto(area.id)} style={st.areaImg} />
+            <Text style={[st.areaName, st.flex]}>{area.name}</Text>
             <Text style={st.areaPct}>
               {p.done}/{p.total}
             </Text>
@@ -101,34 +123,43 @@ export default function ReportsScreen() {
         )}
       </Card>
 
-      <Button title="Reiniciar demo" variant="ghost" onPress={reset} style={st.mt24} />
+      <Button
+        title="Etiquetas QR de equipos (PDF)"
+        variant="outline"
+        loading={labelsBusy}
+        onPress={shareLabels}
+        style={st.mt24}
+      />
+      <Button title="Reiniciar demo" variant="ghost" onPress={reset} style={st.mt8} />
     </ScrollView>
   );
 }
 
-const Kpi = ({ value, label, sub, tone = C.ink }) => (
-  <Card style={st.kpi}>
-    <Text style={[st.kpiValue, { color: tone }]}>{value}</Text>
+const Kpi = ({ value, label, sub, bg }) => (
+  <View style={[st.kpi, { backgroundColor: bg }]}>
+    <Text style={st.kpiValue}>{value}</Text>
     <Text style={st.kpiLabel}>{label}</Text>
     {sub ? <Text style={st.kpiSub}>{sub}</Text> : null}
-  </Card>
+  </View>
 );
 
 const st = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.bg },
   body: { padding: 16, paddingBottom: 40 },
-  h1: { fontSize: 24, fontWeight: "800", color: C.ink },
+  h1: { fontSize: 24, fontWeight: "800", color: C.navy },
   sub: { fontSize: 14, color: C.muted, marginTop: 2, marginBottom: 12 },
   kpis: { flexDirection: "row", gap: 10, marginBottom: 10 },
-  kpi: { flex: 1, padding: 14 },
-  kpiValue: { fontSize: 30, fontWeight: "800" },
-  kpiLabel: { color: C.inkSoft, fontSize: 13, fontWeight: "600", marginTop: 2 },
-  kpiSub: { color: C.muted, fontSize: 12, marginTop: 4 },
+  kpi: { flex: 1, padding: 16, borderRadius: 16, minHeight: 112 },
+  kpiValue: { fontSize: 32, fontWeight: "800", color: "#fff" },
+  kpiLabel: { color: "rgba(255,255,255,0.92)", fontSize: 13, fontWeight: "700", marginTop: 2 },
+  kpiSub: { color: "rgba(255,255,255,0.75)", fontSize: 12, marginTop: 4 },
+  flex: { flex: 1 },
+  areaImg: { width: 46, height: 46, borderRadius: 10, marginRight: 12 },
   mb10: { marginBottom: 10 },
   mt8: { marginTop: 8 },
   mt24: { marginTop: 24 },
   rowBetween: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  areaName: { fontSize: 16, fontWeight: "800", color: C.ink },
+  areaName: { fontSize: 16, fontWeight: "800", color: C.navy },
   areaPct: { fontWeight: "700", color: C.inkSoft },
   areaMeta: { color: C.muted, fontSize: 13, marginTop: 6 },
   attRow: { flexDirection: "row", paddingVertical: 6, alignItems: "center" },
